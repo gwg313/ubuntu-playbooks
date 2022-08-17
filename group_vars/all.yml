@@ -11,3 +11,7 @@ ufw:
   enable_http: False
   enable https: False
   enable ssh: True
+
+kubernetes:
+  master: False
+  cidr: 192.168.10.1/24

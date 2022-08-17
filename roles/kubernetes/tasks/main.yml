@@ -1,0 +1,52 @@
+---
+
+- name: add Kubernetes key
+  apt_key:
+   url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+   state: present
+
+- name: add Kubernetes APT repository
+  apt_repository:
+    repo: deb http://apt.kubernetes.io/ kubernetes-xenial main
+    state: present
+    filename: 'kubernetes'
+
+- name: install kubelet
+  apt:
+   name: kubelet
+   state: present
+   update_cache: true
+
+- name: install kubeadm
+  apt:
+   name: kubeadm
+   state: present
+
+- name: install kubectl
+  apt:
+   name: kubectl
+   state: present
+   force: yes
+  when: kubernetes.master is defined and kubernetes.master == True
+
+- name: Start the cluster
+  shell: kubeadm init --pod-network-cidr={{kubernetes.cidr}} >> cluster.txt
+  args:
+    chdir: $HOME
+    creates: cluster.txt
+  when: kubernetes.master is defined and kubernetes.master == True
+
+- name: create .kube directory
+  file:
+    path: $HOME/.kube
+    state: directory
+    mode: 0755
+  when: kubernetes.master is defined and kubernetes.master == True
+
+- name: copy admin.conf to user's kube config
+  copy:
+    src: /etc/kubernetes/admin.conf
+    dest: /home/ubuntu/.kube/config
+    remote_src: yes
+    owner: "{{user.name}}"
+  when: kubernetes.master is defined and kubernetes.master == True

@@ -6,3 +6,6 @@
     - { role: fail2ban, tags: ['fail2ban'] }
     - { role: ufw, tags: ['ufw'] }
     - { role: fstab, tags: ['fstab'] }
+      
+    - { role: docker, tags: ['docker'] }
+    - { role: kubernetes, tags: ['kubernetes'] }
