@@ -1,0 +1,13 @@
+---
+
+user:
+    name: glen
+
+ssh:
+    port: 22
+    enable_sshd: True
+
+ufw:
+  enable_http: False
+  enable https: False
+  enable ssh: True

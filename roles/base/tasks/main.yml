@@ -1,0 +1,35 @@
+---
+- name: update apt
+  apt: update_cache=yes cache_valid_time=86400
+
+- name: install packages
+  apt:
+    state: latest
+    package:
+      - ufw
+      - fail2ban
+      - unattended-upgrades
+
+- name: set up unattended upgrades
+  copy: src=apt_periodic dest=/etc/apt/apt.conf.d/10periodic
+
+- name: automatically remove unused dependencies
+  lineinfile: dest=/etc/apt/apt.conf.d/50unattended-upgrades
+              regexp="Unattended-Upgrade::Remove-Unused-Dependencies"
+              line="Unattended-Upgrade::Remove-Unused-Dependencies \"true\";"
+              state=present
+              create=yes
+
+- name: check su access
+  command: dpkg-statoverride --list /bin/su
+  register: su_statoverride
+  changed_when: False
+  failed_when: False
+
+- name: remove existing su access override
+  command: dpkg-statoverride --remove /bin/su
+  when: su_statoverride.stdout and su_statoverride.stdout != "root sudo 4750 /bin/su"
+
+- name: limit su access to sudo group
+  command: dpkg-statoverride --update --add root sudo 4750 /bin/su
+  when: not su_statoverride.stdout or su_statoverride.stdout != "root sudo 4750 /bin/su"

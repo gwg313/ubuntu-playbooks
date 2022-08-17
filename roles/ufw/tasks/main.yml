@@ -1,0 +1,30 @@
+---
+
+- name: install ufw
+  apt:
+    state: latest
+    package:
+      - ufw
+
+- name: Reset UFW rules
+  ufw: 
+    state: reset
+
+- name: ufw allow ssh traffic
+  ufw: rule=allow port=22 proto=tcp
+  when: ssh.enable_sshd is defined and ssh.enable_sshd == True
+
+- name: ufw allow http traffic
+  ufw: rule=allow port=80 proto=tcp
+  when: ufw.http is defined and ufw.http == True
+
+- name: ufw allow https traffic
+  ufw: rule=allow port=443 proto=tcp
+  when: ufw.https is defined and ufw.https == True
+
+- name: ufw deny everything else
+  ufw: state=enabled policy=deny
+
+- name: Set logging
+  ufw:
+    logging: 'on'

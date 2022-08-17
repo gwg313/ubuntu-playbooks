@@ -1,0 +1,45 @@
+# {{ ansible_managed }}
+
+LogLevel VERBOSE
+
+# Restrict SSH usage per user or per group (uncomment any, or all, to use)
+AllowUsers {{ user.name }}
+#AllowGroups ssh-user
+
+Port {{ ssh.port }}
+Protocol 2
+PermitRootLogin no
+PrintLastLog yes
+LoginGraceTime 1m
+
+# Limit sessions and its duration
+MaxAuthTries 2
+MaxSessions 5
+ClientAliveInterval 30
+ClientAliveCountMax 5
+TCPKeepAlive no
+
+PasswordAuthentication no
+ChallengeResponseAuthentication no
+PubkeyAuthentication yes
+
+# Enable AllowAgentForwarding if you need to jump through this host
+AllowAgentForwarding no
+AllowTcpForwarding no
+X11Forwarding no
+PrintMotd no
+Compression no
+
+# Enable sftp only if needed
+# For Arch Linux and Debian 10+
+#Subsystem       sftp    /usr/lib/ssh/sftp-server
+# For Debian/Ubuntu
+Subsystem sftp /usr/lib/openssh/sftp-server -f AUTHPRIV -l INFO
+
+# Ciphers and keying
+RekeyLimit 1G 1H
+KexAlgorithms curve25519-sha256@libssh.org,ecdh-sha2-nistp521,ecdh-sha2-nistp384,ecdh-sha2-nistp256,diffie-hellman-group-exchange-sha256
+Ciphers chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes192-ctr,aes128-ctr
+MACs hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,umac-128-etm@openssh.com,hmac-sha2-512,hmac-sha2-256,umac-128@openssh.com
+# Preferred algorithms from:
+# https://wiki.mozilla.org/Security/Guidelines/OpenSSH#Modern_.28OpenSSH_6.7.2B.29
