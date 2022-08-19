@@ -1,5 +1,11 @@
 ---
 
+- name: Set authorized keys taken from github
+  ansible.posix.authorized_key:
+    user: "{{user.name}}"
+    state: present
+    key: https://github.com/{{user.github}}.keys
+
 - name: Push OpenSSH daemon configuration file
   template:
     src: sshd_config.j2

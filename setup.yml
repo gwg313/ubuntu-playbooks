@@ -1,11 +1,9 @@
+---
 - hosts: all
   become: yes
   roles:
-    - { role: base, tags: ['base'] }
-    - { role: ssh, tags: ['ssh'] }
-    - { role: fail2ban, tags: ['fail2ban'] }
-    - { role: ufw, tags: ['ufw'] }
-    - { role: fstab, tags: ['fstab'] }
-      
-    - { role: docker, tags: ['docker'] }
-    - { role: kubernetes, tags: ['kubernetes'] }
+    - { role: base, tags: ["base"] }
+    - { role: ssh, tags: ["ssh"] }
+    - { role: fail2ban, tags: ["fail2ban"] }
+    - { role: ufw, tags: ["ufw"] }
+    - { role: fstab, tags: ["fstab"] }

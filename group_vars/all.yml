@@ -1,7 +1,8 @@
 ---
 
 user:
-    name: glen
+    name: vagrant
+    github: losttenko
 
 ssh:
     port: 22
@@ -11,7 +12,3 @@ ufw:
   enable_http: False
   enable https: False
   enable ssh: True
-
-kubernetes:
-  master: False
-  cidr: 192.168.10.1/24

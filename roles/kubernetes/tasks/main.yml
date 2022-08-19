@@ -1,5 +1,32 @@
 ---
 
+- name: Install dependencies
+  apt:
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - lsb-release
+      - gnupg
+    state: latest
+    update_cache: true
+
+- name: Add signing key
+  apt_key:
+    url: "https://download.docker.com/linux/{{ ansible_distribution | lower }}/gpg"
+    state: present
+
+- name: Add repository into sources list
+  apt_repository:
+    repo: "deb [arch={{ ansible_architecture }}] https://download.docker.com/linux/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} stable"
+    state: present
+    filename: docker
+
+- name: install containerd
+  apt:
+   name: containerd
+   state: present
+   update_cache: true
+
 - name: add Kubernetes key
   apt_key:
    url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
@@ -29,8 +56,34 @@
    force: yes
   when: kubernetes.master is defined and kubernetes.master == True
 
+- name: enable ipv4 forwarding 
+  ansible.posix.sysctl:
+      name: net.ipv4.ip_forward
+      value: '1'
+      sysctl_set: yes
+      state: present
+      reload: yes
+
+- name: Add the br_netfilter module
+  community.general.modprobe:
+    name: br_netfilter
+    state: present
+
+- name: enable bridge 
+  ansible.posix.sysctl:
+      name: net.bridge.bridge-nf-call-iptables 
+      value: '1'
+      sysctl_set: yes
+      state: present
+      reload: yes
+
+- name: Update etc hosts
+  ansible.builtin.shell:
+    cmd: echo $(hostname -i | xargs -n1 | grep ^10.) $(hostname) >> /etc/hosts
+  when: kubernetes.master is defined and kubernetes.master == True
+
 - name: Start the cluster
-  shell: kubeadm init --pod-network-cidr={{kubernetes.cidr}} >> cluster.txt
+  shell: kubeadm init --control-plane-endpoint 192.168.60.10:6443 >> cluster.txt
   args:
     chdir: $HOME
     creates: cluster.txt
@@ -43,10 +96,16 @@
     mode: 0755
   when: kubernetes.master is defined and kubernetes.master == True
 
+- name: Create the .kube directory
+  ansible.builtin.file:
+    path: /home/{{user.name}}/.kube
+    state: directory
+    mode: '0755'
+
 - name: copy admin.conf to user's kube config
   copy:
     src: /etc/kubernetes/admin.conf
-    dest: /home/ubuntu/.kube/config
+    dest: /home/{{user.name}}/.kube/config
     remote_src: yes
     owner: "{{user.name}}"
   when: kubernetes.master is defined and kubernetes.master == True

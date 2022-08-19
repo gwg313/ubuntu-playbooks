@@ -25,6 +25,54 @@
 - name: ufw deny everything else
   ufw: state=enabled policy=deny
 
+- name: ufw allow kubelet api
+  ufw: 
+    rule: allow
+    port: 10250
+    proto: tcp
+    src: "{{kubernetes.cidr}}"
+  when: kubernetes is defined
+
+- name: ufw allow kubernetes nodeport traffic
+  ufw: 
+    rule: allow
+    port: 30000:32767
+    proto: tcp
+    src: "{{kubernetes.cidr}}"
+  when: kubernetes is defined and kubernetes.master == False
+
+- name: ufw allow kubernetes api server
+  ufw: 
+    rule: allow
+    port: 6443
+    proto: tcp
+    src: "{{kubernetes.cidr}}"
+  when: kubernetes is defined and kubernetes.master == True
+
+- name: ufw allow kubernetes etcd server client API
+  ufw: 
+    rule: allow
+    port: 2379:2380
+    proto: tcp
+    src: "{{kubernetes.cidr}}"
+  when: kubernetes is defined and kubernetes.master == True
+
+- name: ufw allow kubernetes kube-scheduler
+  ufw: 
+    rule: allow
+    port: 10259
+    proto: tcp
+    src: "{{kubernetes.cidr}}"
+  when: kubernetes is defined and kubernetes.master == true
+  
+- name: ufw allow kubernetes kube-controller-manager
+  ufw: 
+    rule: allow
+    port: 10257
+    proto: tcp
+    src: "{{kubernetes.cidr}}"
+  when: kubernetes is defined and kubernetes.master == true
+
 - name: Set logging
   ufw:
     logging: 'on'
